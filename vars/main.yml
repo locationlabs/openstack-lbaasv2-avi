@@ -1,0 +1,3 @@
+---
+avi_lbplugin_dir: "neutron_lbaas/services/loadbalancer/drivers/avi"
+neutron_lbplugin_dir: "/usr/lib/python2.7/site-packages/neutron_lbaas/services/loadbalancer/drivers"

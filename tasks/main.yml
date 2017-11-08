@@ -1,0 +1,122 @@
+---
+- name: Check required packages are installed
+  yum:
+    name: openstack-neutron-lbaas
+    state: present
+
+- name: Copy Avi LBaaS driver files
+  copy:
+    src: "{{ avi_driver_package_dir|mandatory }}/{{ avi_lbplugin_dir }}"
+    dest: "{{ neutron_lbplugin_dir }}/avi"
+
+- name: Make temporary directory
+  tempfile:
+    suffix: avi
+    state: directory
+  register: tempdir
+
+- name: Copy Avi SELinux policy files
+  copy:
+    src: "{{ avi_driver_package_dir|mandatory }}/setup/avi_lbaas.{{ item }}"
+    dest: "{{ tempdir.path|default('/tmp') }}"
+  with_items:
+    - pp
+    - te
+
+- name: Avi SELinux policy
+  block:
+    - name: Install precompiled SELinux policy
+      command: "semodule -i {{ tempdir.path|default('/tmp') }}/avi_lbaas.pp"
+
+  rescue:
+    - name: Install checkpolicy to recompile SELinux policy
+      yum:
+        name: checkpolicy
+        state: present
+
+    - name: Recompile SELinux policy
+      command: "{{ item }}"
+      with_items:
+        - "checkmodule -M -m -o {{ tempdir.path|default('/tmp') }}/avi_lbaas.mod {{ tempdir.path|default('/tmp') }}/avi_lbaas.te"
+        - "semodule_package -o {{ tempdir.path|default('/tmp') }}/avi_lbaas.pp -m {{ tempdir.path|default('/tmp') }}/avi_lbaas.mod"
+
+    - name: Install SELinux policy
+      command: "semodule -i {{ tempdir.path|default('/tmp') }}/avi_lbaas.pp"
+
+- name: Make local temporary directory
+  tempfile:
+    suffix: avi
+    state: directory
+  delegate_to: 127.0.0.1
+  run_once: true
+  become: false
+  check_mode: no
+  register: local_tempdir
+
+- name: Fetch neutron configuration files
+  fetch:
+    src: "/etc/neutron/neutron.conf"
+    dest: "{{ local_tempdir.path }}"
+  check_mode: no
+  changed_when: false
+
+- name: Discover neutron configuration
+  set_fact:
+    _neutron_service_plugins: "{{ lookup('ini', 'service_plugins section=DEFAULT file=' + item + '/etc/neutron/neutron.conf') }}"
+  with_items:
+    - "{{ local_tempdir.path }}/{{ inventory_hostname }}"
+  register: _neutron_data
+  check_mode: no
+
+- name: Discover neutron configuration (2)
+  set_fact:
+    neutron_service_plugins: "{{ _neutron_data.results | map(attribute='ansible_facts._neutron_service_plugins') | list | join }}"
+  check_mode: no
+
+- debug:
+    var: neutron_service_plugins
+
+# RDO uses "short names" for neutron plugins
+# lbaasv2 == neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPluginv2
+- name: Configure Neutron
+  ini_file:
+    path: /etc/neutron/neutron.conf
+    section: DEFAULT
+    option: service_plugins
+    value: "{{ neutron_service_plugins }},lbaasv2"
+    backup: yes
+    group: neutron
+    mode: 0640
+  when: "'lbaasv2' not in neutron_service_plugins"
+  notify: restart neutron
+
+# Neutron LBaaSV2 lets you specify more than one service_provider, so we use
+# this instead of ini_file
+- name: Configure Neutron LBaaS
+  lineinfile:
+    path: /etc/neutron/neutron_lbaas.conf
+    insertafter: '\[service_providers\]'
+    line: "service_provider=LOADBALANCERV2:avi:neutron_lbaas.services.loadbalancer.drivers.avi.avi_driver.AviLbaaSDriver"
+    backup: yes
+    group: neutron
+    mode: 0640
+  notify: restart neutron
+
+# https://github.com/ansible/ansible/issues/29688 diff mode does not respect
+# no_log
+- name: Configure Avi LBaaS Driver
+  ini_file:
+    path: /etc/neutron/neutron_lbaas.conf
+    section: avi
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: yes
+    group: neutron
+    mode: 0640
+  notify: restart neutron
+  no_log: "{{ item.no_log|default(false) }}"
+  with_items:
+    - { option: "address", value: "{{ avi_controller_ip }}" }
+    - { option: "user", value: "{{ avi_controller_admin_user }}" }
+    - { option: "password", value: "{{ avi_controller_admin_password }}", no_log: true }
+    - { option: "cloud", value: "{{ avi_controller_cloud }}" }
