@@ -62,19 +62,8 @@
 
 - name: Discover neutron configuration
   set_fact:
-    _neutron_service_plugins: "{{ lookup('ini', 'service_plugins section=DEFAULT file=' + item + '/etc/neutron/neutron.conf') }}"
-  with_items:
-    - "{{ local_tempdir.path }}/{{ inventory_hostname }}"
-  register: _neutron_data
+    neutron_service_plugins: "{{ lookup('ini', 'service_plugins section=DEFAULT file=' + local_tempdir.path + '/' + inventory_hostname + '/etc/neutron/neutron.conf') }}"
   check_mode: no
-
-- name: Discover neutron configuration (2)
-  set_fact:
-    neutron_service_plugins: "{{ _neutron_data.results | map(attribute='ansible_facts._neutron_service_plugins') | list | join }}"
-  check_mode: no
-
-- debug:
-    var: neutron_service_plugins
 
 # RDO uses "short names" for neutron plugins
 # lbaasv2 == neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPluginv2
