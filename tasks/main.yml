@@ -6,7 +6,7 @@
 
 - name: Copy Avi LBaaS driver files
   copy:
-    src: "{{ avi_driver_package_dir|mandatory }}/{{ avi_lbplugin_dir }}"
+    src: "{{ avi_driver_package_dir|mandatory }}/{{ avi_lbplugin_dir }}/"
     dest: "{{ neutron_lbplugin_dir }}/avi"
 
 - name: Make temporary directory
@@ -79,13 +79,14 @@
   when: "'lbaasv2' not in neutron_service_plugins"
   notify: restart neutron
 
-# Neutron LBaaSV2 lets you specify more than one service_provider, so we use
+# Neutron lets you specify more than one service_provider, so we use
 # this instead of ini_file
 - name: Configure Neutron LBaaS
   lineinfile:
     path: /etc/neutron/neutron_lbaas.conf
     insertafter: '\[service_providers\]'
-    line: "service_provider=LOADBALANCERV2:avi:neutron_lbaas.services.loadbalancer.drivers.avi.avi_driver.AviLbaaSDriver"
+    regexp: 'service_provider=LOADBALANCERV2'
+    line: "service_provider=LOADBALANCERV2:Avi_ADC:neutron_lbaas.drivers.avi.avi_driver.AviDriver:default"
     backup: yes
     group: neutron
     mode: 0640
@@ -96,7 +97,7 @@
 - name: Configure Avi LBaaS Driver
   ini_file:
     path: /etc/neutron/neutron_lbaas.conf
-    section: avi
+    section: Avi_ADC
     option: "{{ item.option }}"
     value: "{{ item.value }}"
     backup: yes
