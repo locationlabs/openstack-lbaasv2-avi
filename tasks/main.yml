@@ -7,3 +7,11 @@
   - import_tasks: heat.yml
     when: avi_heat
 
+  # Bug in Ocata TripleO: Neutron LBaaS dashboard integration not enabled
+  # So we'll do it here
+  - import_tasks: native-dashboard.yml
+    when: not avi_dashboard
+
+  # Avi LBaaS Dashboard replacement
+  - import_tasks: avi-dashboard.yml
+    when: avi_dashboard

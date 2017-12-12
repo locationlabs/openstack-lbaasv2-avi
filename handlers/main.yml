@@ -8,3 +8,8 @@
     systemd:
       name: openstack-heat-*
       state: restarted
+
+  - name: restart httpd
+    systemd:
+      name: httpd
+      state: restarted

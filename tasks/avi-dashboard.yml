@@ -1,0 +1,23 @@
+---
+  - name: Install Avi dashboard pip package
+    pip:
+      name: "{{ avi_dashboard_pip_package }}"
+
+  #TODO: Find and set enable_lb to False
+  - name: Insert common Avi code to dashboard local_settings
+    blockinfile:
+      path: /etc/openstack-dashboard/local_settings
+      block: "{{ avi_dashboard_code }}"
+      backup: yes
+      marker: "# {mark} ANSIBLE MANAGED BLOCK FOR COMMON AVI CODE"
+      validate: python -m py_compile %s
+    notify: restart httpd
+
+  - name: Insert env specific Avi code to dashboard local_settings
+    blockinfile:
+      path: /etc/openstack-dashboard/local_settings
+      block: "{{ avi_dashboard_code_specific|mandatory }}"
+      backup: yes
+      marker: "# {mark} ANSIBLE MANAGED BLOCK FOR ENV SPECIFIC AVI CODE"
+      validate: python -m py_compile %s
+    notify: restart httpd

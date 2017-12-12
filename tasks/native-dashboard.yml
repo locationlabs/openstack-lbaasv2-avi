@@ -1,0 +1,9 @@
+---
+  - name: Install Neutron LBaaS UI
+    yum:
+      name: openstack-neutron-lbaas-ui
+      state: present
+
+  - name: Enable Neutron LBaaS UI in Horizon
+    # TODO: Enable lbaas ui, search for enable_lb and set to True
+    notify: restart httpd
