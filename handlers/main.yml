@@ -1,5 +1,10 @@
 ---
-- name: restart neutron
-  systemd:
-    name: neutron-*
-    state: restarted
+  - name: restart neutron
+    systemd:
+      name: neutron-*
+      state: restarted
+
+  - name: restart heat
+    systemd:
+      name: openstack-heat-*
+      state: restarted

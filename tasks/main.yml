@@ -3,3 +3,7 @@
   - import_tasks: lbaas.yml
     when: avi_lbaas
 
+  # Avi Heat resources
+  - import_tasks: heat.yml
+    when: avi_heat
+

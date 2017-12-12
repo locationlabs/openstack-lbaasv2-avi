@@ -1,0 +1,20 @@
+---
+  - name: Install Avi Heat pip package
+    pip:
+      name: "{{ avi_heat_pip_package }}"
+
+  - name: Add Avi options to /etc/heat/heat.conf
+    ini_file:
+      path: /etc/heat/heat.conf
+      section: DEFAULT
+      option: "{{ item.name }}"
+      value: "{{ item.value }}"
+      mode: 0640
+      backup: yes
+      state: present
+    with_items:
+      - { name: "plugin_dirs", value: "{{ avi_heat_dir }}" }
+      - { name: "avi_controller", value: "{{ avi_controller_ip|mandatory }}" }
+    loop_control:
+      label: "{{ item.name }}"
+    notify: restart heat
