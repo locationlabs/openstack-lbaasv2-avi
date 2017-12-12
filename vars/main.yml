@@ -1,3 +1,16 @@
 ---
-avi_lbplugin_dir: "avi_lbaasv2"
-neutron_lbplugin_dir: "/usr/lib/python2.7/site-packages/neutron_lbaas/drivers"
+  avi_lbplugin_dir: "neutron_lbaas/services/loadbalancer/drivers/avi"
+  avi_heat_dir: "/usr/lib/python2.7/site-packages/avi/heat"
+  neutron_lbplugin_dir: "/usr/lib/python2.7/site-packages/neutron_lbaas/services/loadbalancer/drivers"
+  avi_dashboard_code: |
+    AVI_LBAAS_FULL_{{ avi_dashboard_readonly | ternary('READONLY_', '') }}UI = True
+
+    from openstack_dashboard.utils import settings as utsettings
+    import avidashboard.enabled
+    orig_func = utsettings.update_dashboards
+
+    def new_update_dashboards(modules, config, apps):
+        modules.append(avidashboard.enabled)
+        return orig_func(modules, config, apps)
+
+    utsettings.update_dashboards = new_update_dashboards

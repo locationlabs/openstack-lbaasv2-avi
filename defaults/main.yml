@@ -1,3 +1,9 @@
 ---
-avi_controller_admin_user: "admin"
-avi_controller_cloud: "Default-Cloud"
+  avi_lbaas: true
+  avi_heat: false
+  avi_dashboard: false
+  avi_dashboard_readonly: true
+  avi_controller_admin_user: "admin"
+  avi_controller_cloud: "Default-Cloud"
+  avi_heat_pip_package: "https://github.com/avinetworks/avi-heat/releases/download/latest/aviheat-17.1b201709142017.tar.gz"
+  avi_dashboard_pip_package: "https://github.com/avinetworks/avi-horizon-dashboard/releases/download/latest/avidashboard_panel-17.2b20170726.tar.gz"
