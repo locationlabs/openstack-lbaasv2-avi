@@ -1,6 +1,6 @@
 galaxy_info:
   author: David M Noriega
-  description: Installs the Avi LBaaS V2 driver for OpenStack Neutron
+  description: Integrates Avi Networks load balancer with OpenStack
   company: Location Labs by Avast
 
   license: Apache License 2.0
