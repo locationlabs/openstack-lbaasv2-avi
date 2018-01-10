@@ -1,7 +1,7 @@
 ---
-  avi_lbplugin_dir: "neutron_lbaas/services/loadbalancer/drivers/avi"
+  avi_lbplugin_dir: "neutron_lbaas/drivers/avi"
   avi_heat_dir: "/usr/lib/python2.7/site-packages/avi/heat"
-  neutron_lbplugin_dir: "/usr/lib/python2.7/site-packages/neutron_lbaas/services/loadbalancer/drivers"
+  neutron_lbplugin_dir: "/usr/lib/python2.7/site-packages/neutron_lbaas/drivers"
   avi_dashboard_code: |
     AVI_LBAAS_FULL_{{ avi_dashboard_readonly | ternary('READONLY_', '') }}UI = True
 

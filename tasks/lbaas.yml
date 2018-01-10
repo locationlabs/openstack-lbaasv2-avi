@@ -7,7 +7,7 @@
   - name: Copy Avi LBaaS driver files
     copy:
       src: "{{ avi_driver_package_dir|mandatory }}/{{ avi_lbplugin_dir }}"
-      dest: "{{ neutron_lbplugin_dir }}/avi"
+      dest: "{{ neutron_lbplugin_dir }}"
 
   - name: Make temporary directory
     tempfile:
@@ -96,7 +96,7 @@
     lineinfile:
       path: /etc/neutron/neutron_lbaas.conf
       insertafter: '\[service_providers\]'
-      line: "service_provider=LOADBALANCERV2:avi:neutron_lbaas.services.loadbalancer.drivers.avi.avi_driver.AviLbaaSDriver"
+      line: "service_provider=LOADBALANCERV2:avi:neutron_lbaas.drivers.avi.avi_driver.AviDriver"
       backup: yes
       group: neutron
       mode: 0640
