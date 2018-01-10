@@ -9,13 +9,14 @@
       name: openstack-heat-*
       state: restarted
 
-  - name: restart httpd
-    systemd:
-      name: httpd
-      state: restarted
-
   - name: rebuild cache
+    # Must come before restart httpd
     command: "/usr/share/openstack-dashboard/manage.py {{ item }}"
     with_items:
       - "collectstatic --noinput"
       - "compress --force"
+
+  - name: restart httpd
+    systemd:
+      name: httpd
+      state: restarted
