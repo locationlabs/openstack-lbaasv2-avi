@@ -9,8 +9,10 @@
       name: openstack-heat-*
       state: restarted
 
+# Order of handler exectution is the order they are defined here, not the order they are notified on
+# a task. The rebuild cache step must happen before restarting httpd
+# https://docs.openstack.org/neutron-lbaas-dashboard/pike/installation.html
   - name: rebuild cache
-    # Must come before restart httpd
     command: "/usr/share/openstack-dashboard/manage.py {{ item }}"
     with_items:
       - "collectstatic --noinput"
