@@ -96,7 +96,7 @@
     lineinfile:
       path: /etc/neutron/neutron_lbaas.conf
       insertafter: '\[service_providers\]'
-      line: "service_provider=LOADBALANCERV2:avi:neutron_lbaas.drivers.avi.avi_driver.AviDriver"
+      line: "service_provider=LOADBALANCERV2:avi:neutron_lbaas.drivers.avi.avi_driver.AviDriver:default"
       backup: yes
       group: neutron
       mode: 0640
