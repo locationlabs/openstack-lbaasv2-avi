@@ -13,3 +13,9 @@
     systemd:
       name: httpd
       state: restarted
+
+  - name: rebuild cache
+    command: "/usr/share/openstack-dashboard/manage.py {{ item }}"
+    with_items:
+      - "collectstatic --noinput"
+      - "compress --force"
