@@ -12,8 +12,8 @@ already been completed, see this [heat template][avi-heat] as an example. Avi's
 LBaaS driver files must first be obtained from their customer portal and
 extracted on the ansible host.
 
-Currently this role was developed to target the Ocata release of TripleO and Avi
-version 17.1.x.
+Currently this role was developed to target the Pike release of TripleO and Avi
+version 17.2.4.
 
 By default, this role will configure Avi-OpenStack integration in OpenStack
 managed mode, where Neutron handles LBaaS API requests and the dashboard. The
