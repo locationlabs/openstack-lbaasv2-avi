@@ -5,5 +5,11 @@
       state: present
 
   - name: Enable Neutron LBaaS UI in Horizon
-    # TODO: Enable lbaas ui, search for enable_lb and set to True
+    lineinfile:
+      path: /etc/openstack-dashboard/local_settings
+      regexp: "\\'enable_lb\\'"
+      line: "    'enable_lb': True,"
+      backup: yes
+      group: apache
+      mode: 0640
     notify: restart httpd
