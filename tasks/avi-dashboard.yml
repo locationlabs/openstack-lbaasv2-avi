@@ -11,7 +11,9 @@
       backup: yes
       marker: "# {mark} ANSIBLE MANAGED BLOCK FOR COMMON AVI CODE"
       validate: python -m py_compile %s
-    notify: restart httpd
+    notify:
+      - rebuild cache
+      - restart httpd
 
   - name: Insert env specific Avi code to dashboard local_settings
     blockinfile:
@@ -20,4 +22,6 @@
       backup: yes
       marker: "# {mark} ANSIBLE MANAGED BLOCK FOR ENV SPECIFIC AVI CODE"
       validate: python -m py_compile %s
-    notify: restart httpd
+    notify:
+      - rebuild cache
+      - restart httpd
