@@ -3,7 +3,18 @@
     pip:
       name: "{{ avi_dashboard_pip_package }}"
 
-  #TODO: Find and set enable_lb to False
+  - name: Disable Neutron LBaaS UI in Horizon
+    lineinfile:
+      path: /etc/openstack-dashboard/local_settings
+      regexp: "\\'enable_lb\\'"
+      line: "    'enable_lb': False,"
+      backup: yes
+      group: apache
+      mode: 0640
+    notify:
+      - rebuild cache
+      - restart httpd
+
   - name: Insert common Avi code to dashboard local_settings
     blockinfile:
       path: /etc/openstack-dashboard/local_settings
