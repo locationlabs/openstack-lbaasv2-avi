@@ -107,7 +107,7 @@
   - name: Configure Avi LBaaS Driver
     ini_file:
       path: /etc/neutron/neutron_lbaas.conf
-      section: avi
+      section: avi_adc
       option: "{{ item.option }}"
       value: "{{ item.value }}"
       backup: yes
