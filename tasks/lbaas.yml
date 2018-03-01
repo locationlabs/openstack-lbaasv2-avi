@@ -43,52 +43,10 @@
       - name: Install SELinux policy
         command: "semodule -i {{ tempdir.path|default('/tmp') }}/avi_lbaas.pp"
 
-  - name: Make local temporary directory
-    tempfile:
-      suffix: avi
-      state: directory
-    delegate_to: 127.0.0.1
-    run_once: true
-    become: false
-    check_mode: no
-    register: local_tempdir
-
-  - name: Fetch neutron configuration files
-    fetch:
-      src: "/etc/neutron/neutron.conf"
-      dest: "{{ local_tempdir.path }}"
-    check_mode: no
-    changed_when: false
-
-  - name: Discover neutron configuration
-    set_fact:
-      _neutron_service_plugins: "{{ lookup('ini', 'service_plugins section=DEFAULT file=' + item + '/etc/neutron/neutron.conf') }}"
-    with_items:
-      - "{{ local_tempdir.path }}/{{ inventory_hostname }}"
-    register: _neutron_data
-    check_mode: no
-
-  - name: Discover neutron configuration (2)
-    set_fact:
-      neutron_service_plugins: "{{ _neutron_data.results | map(attribute='ansible_facts._neutron_service_plugins') | list | join }}"
-    check_mode: no
-
-  - debug:
-      var: neutron_service_plugins
-
-  # RDO uses "short names" for neutron plugins
-  # lbaasv2 == neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPluginv2
-  - name: Configure Neutron
-    ini_file:
-      path: /etc/neutron/neutron.conf
-      section: DEFAULT
-      option: service_plugins
-      value: "{{ neutron_service_plugins }},lbaasv2"
-      backup: yes
-      group: neutron
-      mode: 0640
-    when: "'lbaasv2' not in neutron_service_plugins"
-    notify: restart neutron
+  - name: Install LBaaSv2 plugin
+    include_tasks: neutron_plugin.yml
+    vars:
+      neutron_additional_plugin: "lbaasv2"
 
   # Neutron LBaaSV2 lets you specify more than one service_provider, so we use
   # this instead of ini_file
