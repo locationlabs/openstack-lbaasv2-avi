@@ -3,6 +3,38 @@
     pip:
       name: "{{ avi_heat_pip_package }}"
 
+  - name: Make local temporary directory
+    tempfile:
+      suffix: avi-heat
+      state: directory
+    delegate_to: 127.0.0.1
+    run_once: true
+    become: false
+    check_mode: no
+    register: local_tempdir
+
+  - name: Fetch heat configuration files
+    fetch:
+      src: "/etc/heat/heat.conf"
+      dest: "{{ local_tempdir.path }}"
+    check_mode: no
+    changed_when: false
+
+  # Because set_fact will overwrite the var with each loop iteration of with_items, the data we want
+  # is captured by register
+  - name: Discover heat configuration
+    set_fact:
+      _heat_plugin_dirs: "{{ lookup('ini', 'plugin_dirs section=DEFAULT file=' + item + '/etc/heat/heat.conf') }}"
+    with_items:
+      - "{{ local_tempdir.path }}/{{ inventory_hostname }}"
+    register: _heat_data
+    check_mode: no
+
+  - name: Discover heat configuration (2)
+    set_fact:
+      heat_plugin_dirs: "{{ _heat_data.results | map(attribute='ansible_facts._heat_plugin_dirs') | list | join }},{{ avi_heat_dir }}"
+    check_mode: no
+
   - name: Add Avi options to /etc/heat/heat.conf
     ini_file:
       path: /etc/heat/heat.conf
@@ -13,7 +45,7 @@
       backup: yes
       state: present
     with_items:
-      - { name: "plugin_dirs", value: "{{ avi_heat_dir }}" }
+      - { name: "plugin_dirs", value: "{{ heat_plugin_dirs }}" }
       - { name: "avi_controller", value: "{{ avi_controller_ip|mandatory }}" }
     loop_control:
       label: "{{ item.name }}"
